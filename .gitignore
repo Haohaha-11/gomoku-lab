@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+data/
+.agent/
+.venv/
+dist/
+docs/qa/
+qa_report/
+*.log
+*.sqlite3
+*.sqlite3-*
+docs/ppt-extracted.txt

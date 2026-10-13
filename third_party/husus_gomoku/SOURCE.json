@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/husus/gomokuAI-py",
+  "commit": "ebfa1e284dc9a52104125b59548a55790dccc23d",
+  "source_path": "source/utils.py",
+  "source_symbol": "create_pattern_dict",
+  "changes": "Extracted the pattern function only; original patterns and scores are unchanged. engine.evaluate maps player 2 to -1 and scans each maximal line, counting overlapping matches. Other upstream GUI, hashing and AI code are not included."
+}

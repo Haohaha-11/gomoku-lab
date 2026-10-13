@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3ec">
+  <meta name="description" content="五子棋人机对弈：切换 Minimax 与 Alpha–Beta 搜索，观察节点、耗时和剪枝。">
+  <title>五子棋对弈 · 弈境</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="./ink.css">
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="./" aria-label="返回实验主页"><span class="brand-mark">弈</span><strong>五子棋对弈</strong></a>
+    <a class="back-link" href="./">← 返回实验主页</a>
+    <div class="header-actions"><span id="connection" class="connection"><i></i>连接中</span><button class="icon-button" id="sound" aria-label="开启音效" title="开启音效">♫</button><button class="icon-button" id="help" aria-label="规则与操作说明" title="规则与操作说明">?</button></div>
+  </header>
+  <main id="arena" class="arena">
+    <div class="game-toolbar">
+      <div class="match-hud">
+        <div class="player-block"><div class="stone-icon black"></div><div><small id="black-role">你</small><strong>黑棋</strong></div></div>
+        <div class="turn-info" aria-live="polite"><span id="turn-label">轮到你落子</span><strong id="turn-message">黑棋先行</strong><small id="move-count">第 01 手</small></div>
+        <div class="player-block white-player"><div><small id="white-role">AI</small><strong>白棋</strong></div><div class="stone-icon white"></div></div>
+      </div>
+      <div class="drawer-controls"><button id="settings-drawer" aria-expanded="false">对局设置</button><button id="analysis-drawer" aria-expanded="false">搜索分析</button></div>
+    </div>
+    <section id="arena-stage" class="arena-stage" aria-label="山水庭院中的五子棋对局">
+      <img id="scenery" class="scenery" src="./assets/ink-sanctum.png" alt="侠客坐在山间庭院里，面前留出石板地面" draggable="false">
+      <div id="scene" aria-hidden="true"></div>
+      <section class="arena-interaction" id="board-hit" aria-label="五子棋棋盘，点击交叉点落子" tabindex="0"><span class="sr-only">方向键选择交叉点，回车落子。默认选择棋盘中心。</span></section>
+      <div id="replay-label" class="replay-label" hidden>对局回放</div>
+    </section>
+    <div class="board-tools">
+      <span id="board-size-label" class="board-size">13 × 13</span>
+      <div class="view-controls"><button class="small-button active" id="view-toggle" title="切换俯视 / 透视"><span>透视视角</span></button><button class="small-button" id="numbers-toggle"><span>显示手数</span></button><button class="small-button" id="heat-toggle"><span>候选热区</span></button></div>
+      <div class="bottom-actions"><button id="undo">悔棋</button><button id="hint">落子提示</button><button id="export-game">导出棋谱</button></div>
+    </div>
+    <p class="game-instructions">点击交叉点落子，横、竖或斜向连续五子获胜。</p>
+    <aside class="left-panel panel" role="dialog" aria-label="对局设置" aria-modal="true" hidden>
+      <h2 class="section-label">对局设置</h2>
+      <label class="field-label" for="mode">对弈模式</label><select id="mode"><option value="ai">人机对弈</option><option value="local">本地双人</option></select>
+      <div class="field-label">搜索算法</div><div class="engine-select"><button data-engine="alphabeta" class="engine active"><strong>α–β</strong><span>Alpha–Beta<small>剪枝搜索</small></span><i>●</i></button><button data-engine="minimax" class="engine"><strong>M</strong><span>Minimax<small>极大极小搜索</small></span><i>○</i></button></div>
+      <div class="depth-heading"><label class="field-label" for="depth">搜索深度</label><span><b id="depth-value">3</b> 层</span></div><input id="depth" type="range" min="1" max="5" value="3"><div class="range-labels"><span>1 层</span><span>5 层</span></div>
+      <div class="settings-row"><div><label class="field-label" for="size">棋盘大小</label><select id="size"><option value="9">9 × 9</option><option value="13" selected>13 × 13</option><option value="15">15 × 15</option></select></div><div><label class="field-label" for="side">你的执子</label><select id="side"><option value="1">黑棋 · 先手</option><option value="2">白棋 · 后手</option></select></div></div>
+      <button class="primary-button" id="new-game">开始新对局</button>
+      <p class="settings-note">采用无禁手规则。每次思考最多 2 秒，超时返回已完成深度的结果。</p>
+    </aside>
+    <aside class="right-panel panel" role="dialog" aria-label="搜索分析" aria-modal="true" hidden>
+      <h2 class="section-label">搜索分析</h2>
+      <div id="engine-status" class="engine-status"><span class="orbit">✦</span><div><strong>尚未搜索</strong><small>完成一次 AI 落子后显示结果</small></div></div>
+      <div class="metrics"><div><span>访问节点</span><strong id="metric-nodes">—</strong></div><div><span>耗时（毫秒）</span><strong id="metric-time">—</strong></div><div><span>完成 / 请求深度</span><strong id="metric-depth">—</strong></div><div><span>剪枝次数</span><strong id="metric-cutoffs">—</strong></div></div>
+      <div class="candidate-heading"><h3>候选落点</h3><span>启发式评分</span></div><div id="candidates" class="candidates"><div class="empty-candidates">搜索完成后显示</div></div>
+      <button class="text-button" id="tree-button">查看博弈树轨迹 →</button>
+      <div class="feedback"><span>评价 AI 最近这一步</span><div><button id="feedback-good" aria-label="认可这一步" disabled>认可</button><button id="feedback-bad" aria-label="建议改进这一步" disabled>需要改进</button></div><small id="feedback-status">反馈仅用于收集研究数据，尚未训练偏好模型。</small></div>
+    </aside>
+    <div id="panel-backdrop" class="panel-backdrop" hidden></div>
+  </main>  <div id="toast" class="toast" role="status"></div>
+  <dialog id="info-dialog"><button class="dialog-close" aria-label="关闭">×</button><h2>规则与操作说明</h2><p>黑棋先行，双方交替在交叉点落子。任意横线、竖线或斜线上，连续五子及以上即获胜；棋盘填满且无人获胜则为和局。本演示采用无禁手的自由五子棋。</p><h3>操作</h3><p>点击棋盘交叉点落子，也可聚焦棋盘后使用方向键与回车。使用「俯视视角」精确观察；「手数」显示落子顺序；「候选热区」展示最近一次搜索评分。「落子提示」会调用当前引擎，不自动替你落子。</p><h3>如何理解搜索结果</h3><p>深度表示向前搜索的半回合数。为保证演示响应速度，默认使用邻域候选点、每层最多 10 个候选，以及 2 秒思考预算。采用迭代加深，超时时返回最近完整深度；界面同时显示请求与完成深度。候选截断属于近似搜索，不能等同于枚举全棋盘的精确最优解。</p><p>Alpha–Beta 返回的部分候选评分可能只是上下界，不应直接当作精确局面价值。实验室报告会区分完整搜索和超时结果。</p><h3>关于反馈</h3><p>「认可 / 改进」会将当前局面与该次 AI 落点提交至服务器保存。请勿在反馈中填写个人信息。当前仅实现数据采集，学习算法处于规划阶段。</p></dialog>
+  <dialog id="tree-dialog"><button class="dialog-close" aria-label="关闭">×</button><h2>博弈树 · 搜索轨迹</h2><p id="tree-summary">先完成一次 AI 搜索，即可查看轨迹。</p><div id="pv" class="pv"></div><div id="tree-visual" class="tree-visual"></div><p class="fine-print">节点评分相对该节点即将落子的一方，≤ / ≥ 表示上下界。轨迹为受大小限制的搜索记录；连线表示搜索父子关系，金色节点标记剪枝。主变化线使用最近完成深度的结果。</p></dialog>
+  <script type="module" src="./app.js"></script>
+</body></html>

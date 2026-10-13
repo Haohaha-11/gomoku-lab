@@ -1,0 +1,25 @@
+{
+  "capture": "Real app Three.js renderer + the same loaded stage scenery, captured with browser MediaRecorder. No image-generation frames.",
+  "replay": "14 legal plies; first 7 scripted opening; black continuation scripted; white continuation from actual depth-3 Alpha-Beta searches.",
+  "timing": "Edited/accelerated replay pacing; displayed per-move search milliseconds were measured by the Python engine.",
+  "claims": "This is a gameplay and tactical demonstration, not a playing-strength evaluation.",
+  "video": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 800,
+        "avg_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "34.533333",
+      "size": "2356554"
+    }
+  },
+  "video_sha256": "54da799de07475773c2eb5b11d8e715d9e2996c5ee361b57462d3eb49e8aef12",
+  "game_sha256": "1a4993f4037182f8c03e0fa2d6b5be552e677f9e5eed61703e39e4e530e5912d",
+  "poster": "gomoku-demo-poster.jpg"
+}
