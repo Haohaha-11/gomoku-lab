@@ -34,6 +34,9 @@ def main():
         'claims':'This is a gameplay and tactical demonstration, not a playing-strength evaluation.',
         'video':probe,'video_sha256':hashlib.sha256(video.read_bytes()).hexdigest(),
         'game_sha256':hashlib.sha256((OUTPUT/'demo-game.json').read_bytes()).hexdigest(),
+        'visual_sources_sha256':{name:hashlib.sha256((ROOT/'static'/name).read_bytes()).hexdigest()
+                                 for name in ('app.js','victory-ink.js','demo-recorder.js')
+                                 if (ROOT/'static'/name).is_file()},
         'poster':'gomoku-demo-poster.jpg',
     }
     (OUTPUT/'demo-provenance.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')

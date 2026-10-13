@@ -15,11 +15,16 @@
       }
     ],
     "format": {
-      "duration": "34.533333",
-      "size": "2356554"
+      "duration": "33.333333",
+      "size": "2288308"
     }
   },
-  "video_sha256": "54da799de07475773c2eb5b11d8e715d9e2996c5ee361b57462d3eb49e8aef12",
+  "video_sha256": "5d020f32773d449d04af5c8a39f1dd2a7992e2dbc42c22c95f2be37da027fea0",
   "game_sha256": "1a4993f4037182f8c03e0fa2d6b5be552e677f9e5eed61703e39e4e530e5912d",
+  "visual_sources_sha256": {
+    "app.js": "2bf8548512f84a5b758df66f96613d356cc888f45b034ed69ee54e2fa8ae09fd",
+    "victory-ink.js": "d48471823de9df0e3a4bb2aa52b1de09765d3fb2177f428e845aa1d11a6a73b3",
+    "demo-recorder.js": "e4986c753b84302fd349da9b236673c124cd9c2e11dbc2b568235c1fc3ab1e01"
+  },
   "poster": "gomoku-demo-poster.jpg"
 }

@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.js';
+import { createVictoryInk } from './victory-ink.js';
 
 const $ = (id) => document.getElementById(id);
 const state = { size: 13, board: [], moves: [], player: 1, human: 1, mode: 'ai', algorithm: 'alphabeta', depth: 3, busy: false, winner: 0, revision: 0, lastAnalysis: null, feedback: null, showNumbers: false, showHeat: false, topView: false, sound: false, keyboard: [6, 6], panel: 'arena' };
@@ -47,6 +48,8 @@ for(const x of [-8.35,8.35])for(const z of [-8.35,8.35]){const cap=box(.34,.12,.
 // The board bottom is y = -0.89; a receiver 0.015 below it makes contact visible.
 const contactGround=new THREE.Mesh(new THREE.PlaneGeometry(75,75),new THREE.ShadowMaterial({color:0x39402b,opacity:.31}));
 contactGround.rotation.x=-Math.PI/2;contactGround.position.y=-.905;contactGround.receiveShadow=true;world.add(contactGround);
+const victoryInk=createVictoryInk(THREE,boardGroup,{extent});
+let victoryKey=null;
 const stoneGeometry=new THREE.SphereGeometry(1,36,22);
 const blackMaterial=new THREE.MeshPhysicalMaterial({color:0x111713,metalness:.28,roughness:.22,clearcoat:.9,clearcoatRoughness:.18});
 const whiteMaterial=new THREE.MeshPhysicalMaterial({color:0xfffdf2,metalness:.02,roughness:.25,clearcoat:.7,clearcoatRoughness:.17});
@@ -62,7 +65,10 @@ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32Bu
 const offset=state.size===9?2:3;const starIndices=[offset,(state.size-1)/2,state.size-1-offset];for(const r of starIndices)for(const c of starIndices){const star=new THREE.Mesh(new THREE.CircleGeometry(.06,14),new THREE.MeshBasicMaterial({color:0x645334,side:THREE.DoubleSide}));star.rotation.x=-Math.PI/2;star.position.copy(positionAt(r,c));star.position.y=.322;star.userData.owned=true;gridGroup.add(star);}}
 function renderStones(animateLast=false){disposeGroup(stones);disposeGroup(effects);const spacing=extent*2/(state.size-1),radius=Math.min(.66,spacing*.43);state.moves.forEach((move,index)=>{const mesh=new THREE.Mesh(stoneGeometry,move.player===1?blackMaterial:whiteMaterial);const pos=positionAt(move.r,move.c);mesh.position.set(pos.x,.34+radius*.45,pos.z);mesh.scale.set(radius,radius*.55,radius);mesh.castShadow=true;mesh.receiveShadow=true;if(animateLast&&!reducedMotion&&index===state.moves.length-1){mesh.userData.drop=performance.now();mesh.userData.targetY=mesh.position.y;mesh.position.y+=1.1;}stones.add(mesh);if(state.showNumbers){const label=textSprite(String(index+1),move.player===1?'#ded3b8':'#344655',radius*.78);label.position.set(pos.x,.37+radius*1.05,pos.z);stones.add(label);}});
 if(state.moves.length){const last=state.moves.at(-1);const p=positionAt(last.r,last.c);const marker=new THREE.Mesh(new THREE.RingGeometry(radius*.14,radius*.20,30),new THREE.MeshBasicMaterial({color:last.player===1?0xe1be76:0x546d83,side:THREE.DoubleSide}));marker.rotation.x=-Math.PI/2;marker.position.set(p.x,.355+radius*1.03,p.z);marker.userData.owned=true;if(!state.showNumbers)effects.add(marker);}
-if(state.winner>0){const win=winningLine(state.moves.at(-1));if(win){const start=positionAt(...win[0]),end=positionAt(...win.at(-1));start.y=end.y=.39+radius*1.06;const geometry=new THREE.BufferGeometry().setFromPoints([start,end]);const line=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:0xffce75}));line.userData.owned=true;effects.add(line);}}
+const win=state.winner===1||state.winner===2?winningLine(state.moves.at(-1)):null;
+const nextVictoryKey=win?`${state.winner}:${state.moves.length}:${win.map(point=>point.join(',')).join(';')}`:null;
+// Rebuilding stones for move numbers or a view change must not replay the finish.
+if(nextVictoryKey!==victoryKey){victoryKey=nextVictoryKey;if(win){victoryInk.play(win.map(point=>positionAt(...point)),state.winner,performance.now());victoryInk.update(performance.now(),reducedMotion);}else victoryInk.clear();}
 }
 function orderedCandidates(data){return [...(data.candidates||[])].sort((a,b)=>Number(b.move?.[0]===data.move?.[0]&&b.move?.[1]===data.move?.[1])-Number(a.move?.[0]===data.move?.[0]&&a.move?.[1]===data.move?.[1]));}
 function drawHeat(){disposeGroup(heatGroup);if(!state.showHeat||!state.lastAnalysis)return;const candidates=orderedCandidates(state.lastAnalysis);candidates.slice(0,8).forEach((item,index)=>{const move=item.move;if(!move||state.board[move[0]]?.[move[1]])return;const radius=extent*2/(state.size-1)*.34;const mark=new THREE.Mesh(new THREE.RingGeometry(radius*.75,radius,40),new THREE.MeshBasicMaterial({color:index===0?0xd7b267:0x6b9bbe,transparent:true,opacity:1-index*.09,side:THREE.DoubleSide,depthWrite:false}));mark.rotation.x=-Math.PI/2;mark.position.copy(positionAt(...move));mark.position.y=.335;mark.userData.owned=true;heatGroup.add(mark);const label=textSprite(String(index+1),index===0?'#e5c784':'#8bb6d0',.36);label.position.copy(mark.position);label.position.y=.45;heatGroup.add(label);});}
@@ -100,7 +106,7 @@ $('board-hit').addEventListener('click',event=>{const p=pick(event);if(p)humanMo
 $('board-hit').addEventListener('keydown',event=>{const keys={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};if(keys[event.key]){event.preventDefault();state.keyboard=state.keyboard.map((v,i)=>Math.max(0,Math.min(state.size-1,v+keys[event.key][i])));showCursor(state.keyboard);}else if(event.key==='Enter'||event.key===' '){event.preventDefault();humanMove(...state.keyboard);}});
 $('board-hit').addEventListener('focus',()=>showCursor(state.keyboard));
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function animate(time){requestAnimationFrame(animate);if(document.hidden||state.panel!=='arena')return;const t=time/1000;if(!reducedMotion){for(const mesh of stones.children){if(mesh.userData.drop){const p=Math.min(1,(time-mesh.userData.drop)/320);mesh.position.y=mesh.userData.targetY+(1-p)**3*1.1;if(p===1)delete mesh.userData.drop;}}cursorRing.material.opacity=.62+Math.sin(t*3)*.2;}renderer.render(scene,camera);}
+function animate(time){requestAnimationFrame(animate);if(document.hidden||state.panel!=='arena')return;const t=time/1000;if(!reducedMotion){for(const mesh of stones.children){if(mesh.userData.drop){const p=Math.min(1,(time-mesh.userData.drop)/320);mesh.position.y=mesh.userData.targetY+(1-p)**3*1.1;if(p===1)delete mesh.userData.drop;}}cursorRing.material.opacity=.62+Math.sin(t*3)*.2;}victoryInk.update(time,reducedMotion);renderer.render(scene,camera);}
 requestAnimationFrame(animate);
 
 function winningLine(last){if(!last)return null;for(const [dr,dc] of [[0,1],[1,0],[1,1],[1,-1]]){const line=[[last.r,last.c]];for(const sign of [-1,1]){let r=last.r+dr*sign,c=last.c+dc*sign;while(r>=0&&r<state.size&&c>=0&&c<state.size&&state.board[r][c]===last.player){if(sign===-1)line.unshift([r,c]);else line.push([r,c]);r+=dr*sign;c+=dc*sign;}}if(line.length>=5)return line;}return null;}

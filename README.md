@@ -6,6 +6,7 @@ Python 五子棋引擎、连续滚动的项目展示页、立体水墨对局、�
 
 - `/`：项目首页，朱砂笔触目录、对局演示录像、完整实验报告与数据分析。顶部菜单和左侧报告目录支持章节跳转。
 - `/game.html`：独立对局页面，保留清晰棋盘、对弈控制和搜索信息。
+- 获胜时，墨迹沿五子连线方向贯穿棋盘，再沉淀为细墨胜线；悔棋和重开会清除效果，系统减少动态效果设置下直接显示静态胜线。
 - 首页的数据区可切换 9×9、13×13、15×15；节点图与耗时图均来自 `results/summary.json`。耗时误差线为九次测量的样本标准差，不是置信区间。
 - `static/figures/` 为离线可用的 SVG 图，`static/benchmark-data.js` 为同源汇总数据。关闭 JavaScript 后，默认图、完整表格和报告正文仍可阅读。
 - `scripts/render_site_figures.mjs` 从真实测量生成图表，`scripts/build_site.py` 从已验证报告内容生成首页。首页样式和交互分别位于 `static/site.css` 与 `static/site.js`。
@@ -55,7 +56,7 @@ python scripts/benchmark.py
 
 ## 对局录像
 
-`static/media/gomoku-demo.mp4` 是 34.5 秒、1280×800 的真实网页渲染回放。前七手为预设合法开局，之后黑方按示例棋谱落子、白方由 Python Alpha-Beta 搜索计算，展示堵四与斜线成五；播放节奏经过加速，不作为棋力评测。
+`static/media/gomoku-demo.mp4` 是 33.3 秒、1280×800 的真实网页渲染回放。前七手为预设合法开局，之后黑方按示例棋谱落子、白方由 Python Alpha-Beta 搜索计算，展示堵四与斜线成五；播放节奏经过加速，不作为棋力评测。
 
 `demo-game.json` 保存每手局面、搜索结果及实测耗时，`demo-provenance.json` 保存文件哈希与编码信息。需要重录时，执行 `python scripts/make_demo_game.py` 生成棋谱，运行 `python scripts/make_demo_receiver.py` 并在浏览器打开它打印的本机地址；录制结束后，以 PATH 中的 FFmpeg 运行 `python scripts/make_demo_video.py`。本机接收器仅绑定 loopback，不用于公开部署。录制临时文件与运行反馈均不进入 Git。
 
