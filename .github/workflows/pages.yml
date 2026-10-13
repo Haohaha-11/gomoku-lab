@@ -1,0 +1,42 @@
+# Publish web/ to GitHub Pages. The game there calls the search API on haoceanlab.cn
+# (gomoku/server.py allows this origin), so it plays the same as the main deployment.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "docs/*.pdf", "experiments/results/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble site
+        run: |
+          mkdir -p _site/downloads
+          cp -r web/. _site/
+          cp "docs/实验一五子棋实验报告.pdf" _site/downloads/report.pdf
+          cp experiments/results/benchmark.csv _site/downloads/benchmark.csv
+          sed -i 's|<meta name="gomoku-api" content="./api/">|<meta name="gomoku-api" content="https://haoceanlab.cn/gomoku/api/">|' _site/game.html
+          grep -q 'content="https://haoceanlab.cn/gomoku/api/"' _site/game.html
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

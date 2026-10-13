@@ -1,12 +1,12 @@
 """Record the gameplay demo video from the real game page.
 
-    python server.py --port 8801            # in another terminal
+    python -m gomoku.server --port 8801     # in another terminal
     python scripts/record_demo.py --base http://127.0.0.1:8801
 
 Black is played by this script through the same /api/analyze engine (depth 4) and
 entered with the keyboard, so the cursor moves visibly; white is the page's own AI
 at its default settings (Alpha-Beta, depth 3). Frames come from Chrome's screencast
-and are encoded with ffmpeg into static/media/gomoku-demo.mp4 plus a poster.
+and are encoded with ffmpeg into web/media/gomoku-demo.mp4 plus a poster.
 Recording pauses while the script itself is thinking, so there is no dead air.
 """
 from __future__ import annotations
@@ -24,7 +24,7 @@ import urllib.request
 from playwright.async_api import async_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-MEDIA = ROOT / "static" / "media"
+MEDIA = ROOT / "web" / "media"
 CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 GPU_ARGS = ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"]
 SIZE = 13

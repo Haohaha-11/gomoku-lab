@@ -2,7 +2,7 @@ import sys, random, json, time
 from multiprocessing import Pool
 SNAP = sys.argv[1]
 sys.path.insert(0, SNAP)
-from engine import search, winner
+from gomoku.engine import search, winner
 from vcf import vcf, five_points
 
 BUDGET = 1000

@@ -1,9 +1,9 @@
 """Subset the self-hosted OFL fonts to the characters the pages actually use.
 
-    python tools/build_fonts.py
+    python scripts/build_fonts.py
 
-Source fonts are downloaded once into tools/.fonts-src (git-ignored). Re-run after
-changing any brush-font text in static/*.html or the HUD strings in static/app.js.
+Source fonts are downloaded once into scripts/.fonts-src (git-ignored). Re-run after
+changing any brush-font text in web/*.html or the HUD strings in web/js/game.js.
 """
 from pathlib import Path
 import re
@@ -13,7 +13,7 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
 ROOT = Path(__file__).resolve().parents[1]
-STATIC, SRC, OUT = ROOT / "static", ROOT / "tools" / ".fonts-src", ROOT / "static" / "fonts"
+STATIC, SRC, OUT = ROOT / "web", ROOT / "scripts" / ".fonts-src", ROOT / "web" / "fonts"
 GOOGLE = "https://raw.githubusercontent.com/google/fonts/main/ofl/"
 SOURCES = {
     "MaShanZheng-Regular.ttf": GOOGLE + "mashanzheng/MaShanZheng-Regular.ttf",
@@ -24,7 +24,7 @@ ASCII = "".join(chr(c) for c in range(0x20, 0x7F))
 PUNCT = "·，。、：；！？「」（）《》—…“”‘’×→←↗↓"
 
 pages = "".join(p.read_text(encoding="utf-8") for p in sorted(STATIC.glob("*.html")))
-app = (STATIC / "app.js").read_text(encoding="utf-8")
+app = (STATIC / "js" / "game.js").read_text(encoding="utf-8")
 brush_classes = r'class="(?:eyebrow|name|panel-title|turn-label)"[^>]*>([^<]+)<'
 brush = ("身入弈坐忘境，。五子棋实验报告目录一二三四五六七八九十〇剪掉个叶子黑白胜和轮到你对手思考中等待"
          + "".join(re.findall(brush_classes, pages))

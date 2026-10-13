@@ -12,7 +12,7 @@ from math import inf
 from time import perf_counter
 from typing import Callable
 
-from third_party.husus_gomoku.patterns import create_pattern_dict
+from third_party.husus_gomoku.patterns import create_pattern_dict  # MIT, see third_party/
 
 WIN_SCORE = 100_000_000  # Dominates the nonterminal pattern table on supported boards.
 TRACE_LIMIT = 320  # Keep browser payloads bounded without limiting the actual search.

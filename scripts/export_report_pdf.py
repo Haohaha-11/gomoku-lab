@@ -1,6 +1,6 @@
-"""Print the web report (static/report.html) to the downloadable PDF.
+"""Print the web report (web/report.html) to the downloadable PDF.
 
-    python server.py --port 8801            # in another terminal
+    python -m gomoku.server --port 8801     # in another terminal
     python scripts/export_report_pdf.py --base http://127.0.0.1:8801
 """
 import argparse

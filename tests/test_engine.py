@@ -3,7 +3,7 @@ import copy
 import random
 import unittest
 
-from engine import candidate_moves, evaluate, search, validate_board, winner, winning_cells
+from gomoku.engine import candidate_moves, evaluate, search, validate_board, winner, winning_cells
 
 
 def board(size=9):

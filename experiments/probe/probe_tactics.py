@@ -1,6 +1,6 @@
 import sys, time, random, json
 sys.path.insert(0, sys.argv[1])
-from engine import search, winner
+from gomoku.engine import search, winner
 from vcf import vcf, five_points
 
 def empty(n): return [[0]*n for _ in range(n)]

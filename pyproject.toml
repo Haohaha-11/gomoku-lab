@@ -1,0 +1,11 @@
+[project]
+name = "gomoku-lab"
+version = "1.1.0"
+description = "UESTC AI lab: Gomoku minimax / alpha-beta search with an ink-wash web demo"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []  # the engine and server use the standard library only
+
+[project.optional-dependencies]
+# only for regenerating the demo video, the PDF and the font subsets (scripts/)
+tools = ["playwright", "fonttools[woff]"]

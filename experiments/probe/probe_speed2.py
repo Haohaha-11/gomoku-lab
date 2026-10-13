@@ -1,6 +1,6 @@
 import sys, time, random
 sys.path.insert(0, sys.argv[1])
-from engine import search, evaluate, winner
+from gomoku.engine import search, evaluate, winner
 
 def selfplay_position(size, plies, seed):
     random.seed(seed)

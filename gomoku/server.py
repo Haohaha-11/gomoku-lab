@@ -1,4 +1,7 @@
-"""Same-origin Gomoku demo server. Run: python server.py --port 8767."""
+"""Gomoku demo server: static site from web/ plus the search and feedback API.
+
+Run from the repository root:  python -m gomoku.server --port 8767
+"""
 from __future__ import annotations
 
 import argparse
@@ -16,14 +19,17 @@ import threading
 import time
 from urllib.parse import unquote, urlsplit
 
-from engine import search, winner
+from gomoku.engine import search, winner
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(os.environ.get("GOMOKU_DATA_DIR", str(ROOT / "data")))
 SEARCH_SLOTS = threading.BoundedSemaphore(2)
 RATE_LOCK = threading.Lock()
 RATE_BUCKETS: dict[str, deque] = defaultdict(deque)
 MAX_BODY = 32768
+# The GitHub Pages copy of the site calls this API from another origin.
+ALLOWED_ORIGINS = frozenset(o.strip() for o in os.environ.get(
+    "GOMOKU_ALLOWED_ORIGINS", "https://haohaha-11.github.io").split(",") if o.strip())
 
 
 def initialize_database():
@@ -82,7 +88,14 @@ class Handler(BaseHTTPRequestHandler):
         # Do not put submitted feedback or request bodies in logs.
         print(f"{self.log_date_time_string()} {fmt % args}", flush=True)
 
+    def cors_origin(self):
+        origin = self.headers.get("Origin")
+        return origin if origin in ALLOWED_ORIGINS else None
+
     def response_headers(self, content_type, length, download=None):
+        if self.cors_origin():
+            self.send_header("Access-Control-Allow-Origin", self.cors_origin())
+            self.send_header("Vary", "Origin")
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(length))
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -158,13 +171,27 @@ class Handler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         self.do_GET()
 
+    def do_OPTIONS(self):
+        # CORS preflight for JSON posts from an allowed origin.
+        if not self.cors_origin() or not urlsplit(self.path).path.startswith("/api/"):
+            self.json(403, {"error": "Cross-origin requests are not allowed"})
+            return
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", self.cors_origin())
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "600")
+        self.send_header("Vary", "Origin")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_GET(self):
         path = unquote(urlsplit(self.path).path)
         if path == "/api/health":
             self.json(200, {"status": "ok", "engine": "python", "version": "1.0", "rules": "freestyle-five-or-more", "learning": "feedback-collection-only"})
             return
         if path == "/api/benchmarks":
-            summary = ROOT / "results" / "summary.json"
+            summary = ROOT / "experiments" / "results" / "summary.json"
             if summary.exists():
                 self.send_bytes(200, summary.read_bytes(), "application/json; charset=utf-8")
             else:
@@ -172,7 +199,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         downloads = {
             "/downloads/report.pdf": (ROOT / "docs" / "实验一五子棋实验报告.pdf", "gomoku-report.pdf"),
-            "/downloads/benchmark.csv": (ROOT / "results" / "benchmark.csv", "gomoku-benchmark.csv"),
+            "/downloads/benchmark.csv": (ROOT / "experiments" / "results" / "benchmark.csv", "gomoku-benchmark.csv"),
         }
         if path in downloads:
             target, filename = downloads[path]
@@ -182,7 +209,7 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 self.json(404, {"error": "Download is not available"})
             return
-        static = (ROOT / "static").resolve()
+        static = (ROOT / "web").resolve()
         target = (static / (path.lstrip("/") or "index.html")).resolve()
         if not target.is_relative_to(static) or not target.is_file():
             self.json(404, {"error": "Not found"})
@@ -196,7 +223,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def permitted_request(self):
         origin = self.headers.get("Origin")
-        if origin and urlsplit(origin).netloc != self.headers.get("Host"):
+        if origin and urlsplit(origin).netloc != self.headers.get("Host") and origin not in ALLOWED_ORIGINS:
             self.json(403, {"error": "Cross-origin submissions are not allowed"})
             return False
         if self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json":

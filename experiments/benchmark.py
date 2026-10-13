@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from engine import search, winner
+from gomoku.engine import search, winner
 
 SEED = 20261013
 SIZES = (9, 13, 15)
@@ -60,7 +60,7 @@ def make_positions(seed: int = SEED) -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--output", type=Path, default=ROOT / "results")
+    parser.add_argument("--output", type=Path, default=ROOT / "experiments" / "results")
     args = parser.parse_args()
     if not 1 <= args.repeats <= 20:
         parser.error("--repeats must be 1–20")
@@ -114,7 +114,7 @@ def main() -> None:
             ab = pair["alphabeta"]
             ab["node_reduction_pct"] = round(100 * (1 - ab["mean_nodes"] / pair["minimax"]["mean_nodes"]), 3)
             ab["speedup_vs_minimax"] = round(pair["minimax"]["mean_ms"] / ab["mean_ms"], 3)
-    source_files = [ROOT / "engine.py", Path(__file__), ROOT / "third_party/husus_gomoku/patterns.py"]
+    source_files = [ROOT / "gomoku" / "engine.py", Path(__file__), ROOT / "third_party/husus_gomoku/patterns.py"]
     summary = {
         "schema_version": 1,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),

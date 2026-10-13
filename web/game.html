@@ -6,10 +6,11 @@
   <meta name="theme-color" content="#f4f0e8">
   <meta name="description" content="五子棋人机对弈：在水墨庭院里与 Minimax 或 Alpha-Beta 搜索下棋。">
   <title>对弈 · 弈境</title>
-  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="preload" as="image" href="./media/ink-sanctum.jpg">
-  <link rel="stylesheet" href="./ink-site.css">
-  <link rel="stylesheet" href="./game.css">
+  <link rel="stylesheet" href="./css/site.css">
+  <link rel="stylesheet" href="./css/game.css">
+  <meta name="gomoku-api" content="./api/">
 </head>
 <body class="game">
   <svg class="defs" aria-hidden="true" focusable="false">
@@ -122,6 +123,6 @@
     <div id="tree-visual" class="tree-visual"></div>
     <p class="fine-print">≤ / ≥ 表示上下界；标「剪枝」的分支没有展开。</p>
   </dialog>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./js/game.js"></script>
 </body>
 </html>

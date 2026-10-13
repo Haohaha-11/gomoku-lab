@@ -1,28 +1,32 @@
 # 运行与部署
 
-## 本机运行
+## 本机
 
-Python 3.10 或更高版本即可运行对局服务，无需安装第三方 Python 库。Three.js 已随静态文件本地打包。
-
-```powershell
-cd D:\learning\gomoku-lab
-python server.py --port 8767
+```sh
+python -m gomoku.server --port 8767
 ```
 
-浏览器访问 `http://127.0.0.1:8767/` 查看展示首页，`/game.html` 进入对弈。执行 `python -m unittest discover -s tests -v` 验证规则、搜索和 HTTP 接口。执行 `python scripts/benchmark.py` 会重新测量当前机器并覆盖 results 下的基准数据；交付版本中的数据是在本机 Windows 上测得。
+`/` 为主页，`/game.html` 为对弈，`/report.html` 为网页版报告。服务只用 Python 标准库；反馈默认写入 `data/feedback.sqlite3`（可用环境变量 `GOMOKU_DATA_DIR` 指定，已被 Git 忽略）。
 
-## hk_88 服务
+## hk_88（haoceanlab.cn/gomoku/）
 
-已部署地址为 `https://haoceanlab.cn/gomoku/`。Python 服务仅监听 `127.0.0.1:8767`，Caddy 将该子路径转发到服务，现有网站仍使用原来的根路径。服务使用 systemd 独立低权限动态用户运行，反馈数据保存在 `/var/lib/gomoku-lab/feedback.sqlite3`。
+| 项目 | 位置 |
+|---|---|
+| 当前版本 | `/opt/gomoku-lab/current` → `/opt/gomoku-lab/releases/<UTC 时间>/` |
+| 服务 | systemd `gomoku-lab`，`python3 -m gomoku.server --host 127.0.0.1 --port 8767`，动态低权限用户 |
+| 反馈数据 | `/var/lib/gomoku-lab/feedback.sqlite3`（实际路径 `/var/lib/private/gomoku-lab/`），不随版本更新 |
+| 反向代理 | Caddy：`haoceanlab.cn/gomoku/*` → `127.0.0.1:8767` |
 
-每次部署将文件放入 `/opt/gomoku-lab/releases/<UTC时间>/`，`/opt/gomoku-lab/current` 指向正在运行的版本。首次变更 Caddy 前保存原配置并运行配置校验。
+发布新版本：
 
-```powershell
+```sh
 python scripts/package.py
 scp dist/gomoku-lab-release.tar.gz hk_88:/tmp/gomoku-lab-release.tar.gz
 scp scripts/deploy_server.py hk_88:/tmp/deploy-gomoku.py
 ssh hk_88 'python3 /tmp/deploy-gomoku.py'
 ```
+
+部署脚本解压到新的 release 目录，在服务器上跑完测试后切换 `current` 并重启服务。上线确认无误后可删除旧 release 与 `/tmp` 里的两个文件；需要回滚时，用旧提交重新打包部署即可。
 
 ```sh
 systemctl status gomoku-lab
@@ -30,21 +34,19 @@ journalctl -u gomoku-lab -n 50 --no-pager
 curl http://127.0.0.1:8767/api/health
 ```
 
-更新静态文件或算法后重新打包部署即可。回滚时将 current 符号链接切回保留的上一版本，再执行 `systemctl restart gomoku-lab`。反馈数据库位于版本目录之外，更新和回滚不覆盖它。
-
-## 反馈数据
-
-每条反馈保存 AI 落子前的局面、执子方、AI 落点、认可或改进评价、可选的替代落点和文字。当前阶段仅采集，不会在线更新算法。匿名提交还没有经过人工审核，训练前应去重、核验合法性，并按开局族或完整对局分组拆分数据。
+导出反馈：
 
 ```sh
 cd /opt/gomoku-lab/current
 python3 scripts/export_feedback.py --db /var/lib/gomoku-lab/feedback.sqlite3 --output /tmp/gomoku-feedback.jsonl
 ```
 
-反馈数据库与导出文件不通过网页提供下载，也不进入源码提交包。源码 ZIP 在本机交付，网页提供实验报告与基准 CSV。
+## GitHub Pages
 
-## 公开源码与录像
+推送到 `main` 且改动了 `web/`、PDF 或实验数据时，`.github/workflows/pages.yml` 把 `web/` 发布到 https://haohaha-11.github.io/gomoku-lab/ ，同时放入 `downloads/report.pdf` 与 `downloads/benchmark.csv`，并把对弈页的接口地址改为 `https://haoceanlab.cn/gomoku/api/`。
 
-源码仓库为 `https://github.com/Haohaha-11/gomoku-lab`（公开）。提交内容包含代码、报告、基准数据和演示录像，不包含反馈数据库和本机临时文件。
+服务端只对 `GOMOKU_ALLOWED_ORIGINS`（默认 `https://haohaha-11.github.io`）放开跨域请求，其他来源的提交仍被拒绝。
 
-录像由 `scripts/record_demo.py` 从真实对弈页录制，PDF 由 `scripts/export_report_pdf.py` 从网页版报告导出，两者都需要先在本机启动 `server.py`。生产服务通过字节范围响应提供 MP4，支持拖动进度。
+## 素材
+
+录像（`scripts/record_demo.py`）和 PDF（`scripts/export_report_pdf.py`）都从本机运行的网页生成，需要先启动 `python -m gomoku.server --port 8801`。生产服务以字节范围响应提供 MP4，支持拖动进度。

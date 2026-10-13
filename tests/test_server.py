@@ -9,7 +9,7 @@ import unittest
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-import server
+from gomoku import server
 
 
 class ServerTests(unittest.TestCase):
@@ -72,9 +72,23 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.request("/api/analyze", self.position(), {"Origin": "https://unrelated.example"})[0], 403)
         self.assertEqual(self.request("/%2e%2e/server.py")[0], 404)
 
+    def test_allowed_origin_cors(self):
+        origin = "https://haohaha-11.github.io"
+        status, _ = self.request("/api/analyze", self.position(), {"Origin": origin})
+        self.assertEqual(status, 200)
+        with urlopen(Request(self.base + "/api/analyze", method="OPTIONS",
+                             headers={"Origin": origin, "Access-Control-Request-Method": "POST"})) as response:
+            self.assertEqual(response.status, 204)
+            self.assertEqual(response.headers["Access-Control-Allow-Origin"], origin)
+        with urlopen(Request(self.base + "/api/health", headers={"Origin": origin})) as response:
+            self.assertEqual(response.headers["Access-Control-Allow-Origin"], origin)
+        with self.assertRaises(HTTPError) as error:
+            urlopen(Request(self.base + "/api/analyze", method="OPTIONS", headers={"Origin": "https://unrelated.example"}))
+        self.assertEqual(error.exception.code, 403)
+
     def test_video_ranges_and_head(self):
         previous_root = server.ROOT
-        fixture = Path(self.temp.name) / "static"
+        fixture = Path(self.temp.name) / "web"
         fixture.mkdir(exist_ok=True)
         (fixture / "clip.mp4").write_bytes(b"0123456789")
         server.ROOT = Path(self.temp.name)

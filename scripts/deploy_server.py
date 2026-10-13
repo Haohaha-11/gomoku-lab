@@ -15,7 +15,7 @@ release = base / "releases" / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S
 release.mkdir(parents=True, exist_ok=False)
 with tarfile.open("/tmp/gomoku-lab-release.tar.gz") as archive:
     archive.extractall(release, filter="data")
-run("python3", "-m", "unittest", "discover", "-s", str(release / "tests"), "-v")
+run("python3", "-m", "unittest", "discover", "-s", "tests", "-v")
 current = base / "current"
 previous = current.resolve() if current.exists() else None
 pending = base / "next"
@@ -35,7 +35,7 @@ WorkingDirectory=/opt/gomoku-lab/current
 Environment=GOMOKU_DATA_DIR=/var/lib/gomoku-lab
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONDONTWRITEBYTECODE=1
-ExecStart=/usr/bin/python3 /opt/gomoku-lab/current/server.py --host 127.0.0.1 --port 8767
+ExecStart=/usr/bin/python3 -m gomoku.server --host 127.0.0.1 --port 8767
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true

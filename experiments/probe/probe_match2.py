@@ -1,7 +1,7 @@
 import sys, random, time
 from multiprocessing import Pool
 sys.path.insert(0, sys.argv[1])
-from engine import search, winner
+from gomoku.engine import search, winner
 from vcf import vcf, five_points
 import probe_match as pm
 

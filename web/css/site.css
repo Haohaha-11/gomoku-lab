@@ -1,7 +1,7 @@
 /* 弈境 · 宣纸 / 浓墨 / 朱砂。版式参考 WorldSimProbe，目录参考 Ghost of Tsushima 的笔刷选项。 */
 /* 自托管字体均为 OFL，已按页面用字子集化（tools/build_fonts.py）。 */
-@font-face { font-family: "YJ Brush"; src: url("fonts/brush.woff2") format("woff2"); font-display: swap; }
-@font-face { font-family: "YJ Serif"; src: url("fonts/serif.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "YJ Brush"; src: url("../fonts/brush.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "YJ Serif"; src: url("../fonts/serif.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 :root {
   --bg: #f4f0e8;
   --bg-2: #ebe5da;
@@ -207,7 +207,7 @@ figcaption { margin-top: 14px; font-size: 13px; line-height: 1.7; color: var(--f
 .menu-side { position: relative; overflow: hidden; }
 .menu-side.left::before {
   content: ""; position: absolute; inset: 0;
-  background: url("media/ink-sanctum.jpg") 47% 12% / cover no-repeat;
+  background: url("../media/ink-sanctum.jpg") 47% 12% / cover no-repeat;
   filter: saturate(.7); opacity: .7;
 }
 .menu-side.left::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(244, 240, 232, .1), var(--bg) 96%); }
@@ -239,7 +239,7 @@ figcaption { margin-top: 14px; font-size: 13px; line-height: 1.7; color: var(--f
 
 /* ---------- 报告页 ---------- */
 .report-head { position: relative; padding: 210px 0 90px; overflow: hidden; isolation: isolate; border-bottom: 1px solid var(--line); }
-.report-head::before { content: ""; position: absolute; inset: 0; z-index: -2; background: url("media/ink-sanctum.jpg") center 22% / cover; filter: saturate(.8); opacity: .55; }
+.report-head::before { content: ""; position: absolute; inset: 0; z-index: -2; background: url("../media/ink-sanctum.jpg") center 22% / cover; filter: saturate(.8); opacity: .55; }
 .report-head::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--bg) 18%, rgba(244, 240, 232, .55) 55%, rgba(244, 240, 232, .2)), linear-gradient(transparent 55%, var(--bg)); }
 .report-head h1 { margin: 0; font: 400 104px/1 var(--brush); letter-spacing: .1em; }
 .report-head .sub { margin: 24px 0 0; font: 400 24px/1.4 var(--serif); }
