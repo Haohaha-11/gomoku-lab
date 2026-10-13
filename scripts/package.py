@@ -6,7 +6,7 @@ import zipfile
 root = Path(__file__).resolve().parents[1]
 out = root / "dist"
 out.mkdir(exist_ok=True)
-excluded = {".git", ".agent", "__pycache__", ".venv", "data", "dist", "qa", "qa_report", ".fonts-src"}
+excluded = {".git", ".github", ".agent", "__pycache__", ".venv", "data", "dist", "qa", "qa_report", ".fonts-src", "images"}  # images: README only
 files = sorted(p for p in root.rglob("*") if p.is_file() and not any(part in excluded for part in p.relative_to(root).parts) and p.suffix not in (".pyc", ".docx", ".log", ".sqlite3") and p.name != "ppt-extracted.txt")
 with zipfile.ZipFile(out / "gomoku-lab.zip", "w", zipfile.ZIP_DEFLATED) as archive:
     for path in files:
