@@ -10,3 +10,4 @@ qa_report/
 *.sqlite3
 *.sqlite3-*
 docs/ppt-extracted.txt
+tools/.fonts-src/

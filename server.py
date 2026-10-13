@@ -172,7 +172,6 @@ class Handler(BaseHTTPRequestHandler):
             return
         downloads = {
             "/downloads/report.pdf": (ROOT / "docs" / "实验一五子棋实验报告.pdf", "gomoku-report.pdf"),
-            "/downloads/report.html": (ROOT / "docs" / "report.html", "gomoku-report.html"),
             "/downloads/benchmark.csv": (ROOT / "results" / "benchmark.csv", "gomoku-benchmark.csv"),
         }
         if path in downloads:

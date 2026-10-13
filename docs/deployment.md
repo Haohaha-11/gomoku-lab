@@ -45,6 +45,6 @@ python3 scripts/export_feedback.py --db /var/lib/gomoku-lab/feedback.sqlite3 --o
 
 ## 公开源码与录像
 
-源码仓库为 `https://github.com/Haohaha-11/gomoku-lab`，设为公开。提交内容包含代码、报告、固定基准数据和演示录像；不包含匿名反馈数据库、原始课堂附件、本机录制临时文件或内部 QA 资料。
+源码仓库为 `https://github.com/Haohaha-11/gomoku-lab`（公开）。提交内容包含代码、报告、基准数据和演示录像，不包含反馈数据库和本机临时文件。
 
-生产服务通过字节范围响应提供 MP4，支持网页播放和进度拖动。`scripts/make_demo_receiver.py` 是本机录制辅助服务，仅监听 loopback；生产 systemd 始终运行 `server.py`。
+录像由 `scripts/record_demo.py` 从真实对弈页录制，PDF 由 `scripts/export_report_pdf.py` 从网页版报告导出，两者都需要先在本机启动 `server.py`。生产服务通过字节范围响应提供 MP4，支持拖动进度。
